@@ -1,4 +1,4 @@
-PCA\_analysis\_and\_clustering\_liver\_breast\_expression\_data
+PCA\_and\_clustering\_liver\_breast\_expression\_data
 ================
 Christina Kosanovic
 8/13/2021
@@ -7,7 +7,7 @@ This example provides the steps to prepare a Principal Component
 Analysis and clustering (kmeans, hierarchical) of a TCGA breast cancer
 and liver cancer expression data set
 
-Load necessary libraries for PCA analysis and clustering:
+Load necessary libraries for PCA and clustering analysis:
 
 ``` r
 library(ggplot2)
