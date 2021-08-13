@@ -146,7 +146,7 @@ View(data_T)
 
 ## Principal Component Analysis
 
-Performing the Principal Component Analysis and and placing it in an
+Performing the Principal Component Analysis and placing it in an
 object after scaling and centering the data:
 
 ``` r
@@ -169,7 +169,7 @@ summary(pca)
     ## Proportion of Variance  0.0583  0.0407  0.02694  0.02525  0.01953 0.00e+00
     ## Cumulative Proportion   0.8876  0.9283  0.95522  0.98047  1.00000 1.00e+00
 
-Creates object pca$x which hold PCs:
+Creates object pca$x which holds PCs:
 
 ``` r
 pca_result <- data.frame(pca$x, Group)
@@ -208,7 +208,7 @@ plot(plot_pca)
 
 ![](PCA_analysis_and_clustering_liver_breast_expression_data_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
-Plot variance for each principle component (PC1 will explain most
+Plot variance for each principal component (PC1 will explain most
 variance in our data):
 
 ``` r
@@ -225,7 +225,7 @@ distance between them.
 kmeans is the most popular method to partition observations into
 clusters. kmeans will take first random point in data and from that
 point, create a centroid and find the closest element to that point.
-Then those 2 points become one and it searches for the next closest
+Then, those 2 points become one and it searches for the next closest
 point to the new centroid and so on.
 
 Using the transposed data set created previously:
@@ -254,7 +254,7 @@ We may achieve a better result with an alternate form of clustering.
 
 # Hierarchical-clustering
 
-Let’s try hierarchical clustering.  
+A good alternative to kmeans is hierarchical clustering.  
 In this example, ward.d2 is the algorithm for hierarchical clustering.
 
 Reload and define the data:
