@@ -1,0 +1,314 @@
+---
+title: "PCA_analysis_and_clustering_liver_breast_expression_data"
+author: "Christina Kosanovic"
+date: "8/13/2021"
+output: "github_document"
+---
+
+
+
+This example provides the steps to prepare a Principal Component Analysis and clustering (kmeans, hierarchical) of a TCGA breast cancer and liver cancer expression data set  
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load necessary libraries for PCA analysis and clustering:
+
+```{r}
+library(ggplot2)
+library(ggfortify)
+library(stats)
+library(tools)
+```
+
+Load data set into an object and view its format:
+
+```{r}
+data <- read.table("https://raw.githubusercontent.com/PineBiotech/omicslogic/master/LIHC_BRCA_data1_marked_no0.txt", header = TRUE, row.names=1, stringsAsFactors = F, check.names=F)
+View(data)
+```
+
+Save the original format of data in an object:
+
+```{r}
+Origin_data <- data
+```
+
+With a quick check we can see names are assigned to first column and correspond to sample name:
+
+```{r}
+names(data) 
+```
+
+We are interested in variance among the samples of this data set.  
+Assigning the Sample names and Groups (sample + class) into objects:
+
+```{r}
+Group <- t(data[1,]) # Groups and Samples from the transposed first index of rows stored in Groups object
+samples <- colnames(data)
+print(Group)
+print(samples)
+```
+
+Reloading data, skipping first row to remove sample IDs from the expression table:
+
+```{r}
+data <- read.table("https://raw.githubusercontent.com/PineBiotech/omicslogic/master/LIHC_BRCA_data1_marked_no0.txt", header = TRUE, row.names=1, skip =1, stringsAsFactors = F, check.names=F)
+View(data)
+samples <- colnames(data)
+print(samples)
+```
+
+Transform table to numeric to convert character objects --> numeric form: 
+
+```{r}
+data <- transform(data, as.numeric())
+str(data)  ## check that data is num form 
+```
+
+Transposing the expressions matrix to move genes from rows --> columns and samples from columns --> rows. 
+This will ensure samples are treated as the objects and genes as the features to analyze sample variation instead of gene variation. 
+```{r}
+data_T <- t(data)
+View(data_T)
+```
+
+## Principal Component Analysis
+
+
+Performing the Principal Component Analysis and and placing it in an object after scaling and centering the data:  
+
+```{r}
+pca <- prcomp(data_T, scale. = TRUE, center = TRUE)
+```
+
+View the results:
+
+```{r}
+summary(pca)
+```
+
+Creates object pca$x which hold PCs: 
+
+```{r}
+pca_result <- data.frame(pca$x, Group)
+```
+
+Save PCA table: 
+
+```{r}
+write.table(pca_result, file="PCA_table1.txt", row.names=FALSE, col.names=TRUE, sep="\t", quote=FALSE, append=TRUE)
+```
+
+Create object based visualization with ggplot using the PCA result: 
+
+```{r}
+ggplot(pca_result, aes(x=PC1, y=PC2, color=Group)) +geom_point() +stat_ellipse(level=0.4) 
+```
+
+Create object based visualization with autoplot using the PCA result: 
+
+```{r}
+plot_pca <- autoplot(pca, label = TRUE, label.size = 3, colour = "red")
+plot(plot_pca)
+```
+
+Plot variance for each principle component (PC1 will explain most variance in our data): 
+
+```{r}
+plot(pca)
+```
+
+
+
+## kmeans Clustering 
+
+Each object will be assigned to a group depending upon similarity or distance between them.  
+
+kmeans is the most popular method to partition observations into clusters.
+kmeans will take first random point in data and from that point, create a centroid and find the closest element to that point. 
+Then those 2 points become one and it searches for the next closest point to the new centroid and so on.  
+
+
+Using the transposed data set created previously: 
+
+```{r}
+kmeans <- kmeans(data_T,4)
+cluster_result <- data.frame(kmeans$cluster, Group)
+View(cluster_result)
+```
+
+Plotting clusters: 
+
+```{r}
+autoplot(kmeans, data =data_T, label = TRUE, label.size = 3, frame = TRUE, frame.type ='t')
+```
+
+
+kmeans doesn't give us the position but assigns numbers to each one of our samples.   
+We may achieve a better result with an alternate form of clustering.  
+
+
+# Hierarchical-clustering
+
+Let's try hierarchical clustering.  
+In this example, ward.d2 is the algorithm for hierarchical clustering.  
+
+Reload and define the data:   
+
+```{r}
+data <- read.table ("https://raw.githubusercontent.com/PineBiotech/omicslogic/master/LIHC_BRCA_data1_marked_no0.txt", header = TRUE, row.names = 1)
+```
+
+Transpose data to ensure sample rather than gene comparison:   
+
+```{r}
+data1 <- t(data)
+DataT <- cbind(data1, Group)
+View(DataT)
+```
+
+Define clustering and save in an object.  
+Specify distance matrix (euclidean / manhattan / maximum / canberra / binary / minkowski) and linkage(single / complete / average / mean / centroid / ward.D / ward.D2) type.  
+
+```{r}
+hclustering <- hclust(dist(DataT, method = 'euclidean'), method='ward.D2')
+plot(hclustering)
+
+
+
+```
+
+
+Define parameters and save in an object: 
+
+```{r}
+descr1 <- paste ("Distance: ", "euclidean", sep="")
+descr2 <- paste ("Linkage: ", "ward.D2", sep="")
+```
+
+Plot clusters to create dendrogram:   
+
+```{r}
+plot(hclustering, xlab=descr1, sub=descr2, cex = 0.8)
+
+
+
+```
+
+
+Print cluster order: 
+
+```{r}
+hclustering$order
+```
+
+Observe some inconsistency in the clustering results. While the tissue type (breast and liver) have been separated better than the normal tissue vs. tumor, one of the liver (tumor) samples appears to be misplaced. 
+
+
+Often, results can appear skewed with raw data that has not been filtered or normalized to account for noise/experimental artifacts. 
+
+Typically, RNA-Seq data does not have a normal distribution and requires quantile normalization.   
+Let's observe how the output of PCA and clustering varies with quantile normalization and removal of lowly expressed genes.  
+
+## PCA and clustering with normalization 
+
+```{r}
+## Repeating steps above for loading data into object 
+data <- read.table("https://raw.githubusercontent.com/PineBiotech/omicslogic/master/LIHC_BRCA_data1_marked_no0.txt", header = TRUE, row.names=1, stringsAsFactors = F, check.names=F)
+Group <- t(data[1,]) # Groups and Samples from the transposed first index of rows stored in Groups object
+samples <- colnames(data)
+## Reloading data
+data <- read.table("https://raw.githubusercontent.com/PineBiotech/omicslogic/master/LIHC_BRCA_data1_marked_no0.txt", header = TRUE, row.names=1, skip =1, stringsAsFactors = F, check.names=F)
+samples <- colnames(data)
+dim(data)
+```
+
+Filter out lowly expressed genes and normalize data: 
+```{r}
+# Requiring the mean count to be greater than 1000 :  
+datanew = data[rowMeans(data) >1000,] 
+# check dimensions of filtered data 
+dim(datanew)
+# Performing log normalization :
+log_data = log(datanew + 1) 
+# Transforming data to numeric and transposing expression table :
+data_t <- transform(log_data, as.numeric())
+data_T <- t(data_t)
+
+```
+
+Performing PCA analysis on normalized data: 
+
+```{r}
+pca <- prcomp(data_T, scale. = TRUE, center = TRUE)
+## View the results
+summary(pca)
+
+## Creates object pca$x which hold PCs
+pca_result <- data.frame(pca$x, Group)
+
+#Save PCA table
+write.table(pca_result, file="PCA_table2.txt", row.names=FALSE, col.names=TRUE, sep="\t", quote=FALSE, append=TRUE)
+
+## Create object based visualization using the PCA result
+ggplot(pca_result, aes(x=PC1, y=PC2, color=Group)) +geom_point() +stat_ellipse(level=0.4) 
+
+plot_pca <- autoplot(pca, label = TRUE, label.size = 3, colour = "red")
+plot(plot_pca)
+```
+
+Performing kmeans clustering on normalized data: 
+
+```{r}
+## Using the transposed dataset created previously 
+kmeans <- kmeans(data_T,4)
+cluster_result <- data.frame(kmeans$cluster, Group)
+View(cluster_result)
+
+#Plot clusters
+autoplot(kmeans, data =data_T, label = TRUE, label.size = 3, frame = TRUE, frame.type ='t')
+```
+
+Performing hierarchical clustering on normalized data: 
+
+```{r}
+## Loading and defining data
+data <- read.table("https://raw.githubusercontent.com/PineBiotech/omicslogic/master/LIHC_BRCA_data1_marked_no0.txt", header = TRUE, row.names=1, stringsAsFactors = F, check.names=F)
+Group <- t(data[1,]) # Groups and Samples from the transposed first index of rows stored in Groups object
+samples <- colnames(data)
+## Reloading data  
+data <- read.table("https://raw.githubusercontent.com/PineBiotech/omicslogic/master/LIHC_BRCA_data1_marked_no0.txt", header = TRUE, row.names=1, skip =1, stringsAsFactors = F, check.names=F)
+samples <- colnames(data)
+dim(data)
+#Filter out lowly expressed genes:  
+datanew = data[rowMeans(data) >1000,] 
+dim(datanew)
+## Performing log normalization 
+log_data = log(datanew + 1) 
+## Transforming data to numeric and transposing expression table 
+data_t <- transform(log_data, as.numeric())
+data_T <- t(data_t)
+DataT <- cbind(data_T, Group)
+View(DataT)
+
+# Define clustering and save in a object
+hclustering <- hclust(dist(DataT, method = 'euclidean'), method='ward.D2')
+plot(hclustering)
+#Define parameters and save in object
+descr1 <- paste ("Distance: ", "euclidean", sep="")
+descr2 <- paste ("Linkage: ", "ward.D2", sep="")
+#Plot clusters to create dendrogram 
+plot(hclustering, xlab=descr1, sub=descr2, cex = 0.8)
+
+#Print cluster order
+hclustering$order
+```
+
+In this case, filtering and normalization appears to have fixed the observed issue in previous hierarchical clustering. 
+Now the samples are correctly separated by tissue type and normal-like vs. tumor, where the greatest difference is observed between the two tissue types (breast and liver). 
+
+
