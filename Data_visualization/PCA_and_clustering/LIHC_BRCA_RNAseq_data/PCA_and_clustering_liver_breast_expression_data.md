@@ -217,13 +217,13 @@ plot(pca)
 
 ![](PCA_analysis_and_clustering_liver_breast_expression_data_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
-## kmeans Clustering
+## K-means Clustering
 
 Each object will be assigned to a group depending upon similarity or
 distance between them.
 
-kmeans is the most popular method to partition observations into
-clusters. kmeans will take first random point in data and from that
+K-means is the most popular method to partition observations into
+clusters. K-means will take first random point in data and from that
 point, create a centroid and find the closest element to that point.
 Then, those 2 points become one and it searches for the next closest
 point to the new centroid and so on.
@@ -248,13 +248,13 @@ autoplot(kmeans, data =data_T, label = TRUE, label.size = 3, frame = TRUE, frame
 
 ![](PCA_analysis_and_clustering_liver_breast_expression_data_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
-kmeans doesn’t give us the position but assigns numbers to each one of
+K-means doesn’t give us the position but assigns numbers to each one of
 our samples.  
 We may achieve a better result with an alternate form of clustering.
 
-# Hierarchical-clustering
+# Hierarchical Clustering
 
-A good alternative to kmeans is hierarchical clustering.  
+A good alternative to k-means is hierarchical clustering.  
 In this example, ward.d2 is the algorithm for hierarchical clustering.
 
 Reload and define the data:
@@ -408,7 +408,7 @@ plot(plot_pca)
 
 ![](PCA_analysis_and_clustering_liver_breast_expression_data_files/figure-gfm/unnamed-chunk-26-2.png)<!-- -->
 
-Performing kmeans clustering on normalized data:
+Performing k-means clustering on normalized data:
 
 ``` r
 ## Using the transposed dataset created previously 
