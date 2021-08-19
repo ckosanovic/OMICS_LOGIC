@@ -1,6 +1,6 @@
 ## Assignment: Genomics course - Comparing DNA sequences using Phylogenetic Analysis  
 
-## This script details a phylogenetic analysis to determine the evolutionary relationship between various isolates of H3N2.
+## This script details a phylogenetic analysis to determine the evolutionary relationship between various isolates of seasonal influenza (H3N2).
 
 ## Load libraries
 
