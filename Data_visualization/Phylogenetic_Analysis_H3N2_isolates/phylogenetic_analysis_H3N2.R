@@ -1,6 +1,6 @@
 ## Assignment: Genomics course - Comparing DNA sequences using Phylogenetic Analysis  
 
-## This script details a phylogenetic analysis to determines the evolutionary relationship between various isolates of H3N2.
+## This script details a phylogenetic analysis to determine the evolutionary relationship between various isolates of H3N2.
 
 ## Load libraries
 
@@ -22,8 +22,8 @@ Dist <- dist.dna(dna, model = "TN93")
 temp <- as.data.frame(as.matrix(Dist))
 table.paint(temp, cleg = 0, clabel.row = 0.5, clabel.col = 0.5)
 
-## When consulting the heatmap representing the distance matrix:  
-## In this case, darker shades of grey represent greater distances and light shades represent small distance and more similarity.
+## In the heatmap representing the distance matrix:  
+## Darker shades of grey represent greater distances and lighter shades represent smaller distance and greater similarity.
 
 ## Improving the visualization by adding colors to the Distance matrix
 
@@ -41,7 +41,7 @@ image(x = 1:40, y = 1:40, temp1, col = rev(heat.colors(100)), xaxt = "n", yaxt =
 axis(side = 2, at = 1:40, lab = rownames(dna), las = 2, cex.axis = 0.6)
 axis(side = 3, at = 1:40, lab = rownames(dna), las = 3, cex.axis = 0.6)
 
-## In this case, darker shades represent greater distances and light shades represent small distances and more similarity
+## Darker shades represent greater distances and lighter shades represent smaller distances and greater similarity
 
 ## Building phylogenetic tree based on the classical Neighbor-Joining (NJ) method
 
@@ -51,7 +51,7 @@ tree_nj <- nj(Dist)
 
 plot (tree_nj, cex = 0.6)
 
-## In the phylogenetic tree, Y-axis represents the time-axis and X-axis representing the order of branching with taxon.
+## In the phylogenetic tree, y-axis represents the time-axis and x-axis represents the order of branching with taxon.
 
 ## Building phylogenetic tree (dendrogram) using hclust method
 
